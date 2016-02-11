@@ -1,0 +1,104 @@
+Kevin Vu, Comp Sci 35L Winter 2015 | Assignment 1 | key1.txt
+Using eMacs to edit HTML files:
+  - Login into SEAS: ssh hoai@lnxsrv.seas.ucla.edu
+Useful:
+  - M-x linum-mode in emacs to enable line mode numbering
+  - M-x what-line for current line
+NOTES: 
+  - on Mac, Meta M is ESC for me
+  - Enter is equivalent to RET
+
+1.1
+01. emacs exer1.html 
+02. C-s UTF-8 Enter
+03. C-s Instructions Enter C-n
+04. C-s HTML Enter C-b C-b C-b
+05. C-s arrow Enter C-b C-b C-b C-b C-b 
+06. C-e
+07. C-a
+08. ESC Shift <
+09/10. I did use the arrows for #1 and thought it was shifty.. so no :)
+11. Save & Kill eMacs | C-x C-c
+
+1.2
+01.  emacs exer2.html
+02.  M-g M-g 18 Enter C-k
+03.  C-s DELETEME Enter C-a C-k
+04.  C-s http://en. C-s C-a C-k C-p C-k C-n C-n C-k
+05.  C-s <!-- C-f C-f C-f DEL DEL DEL DEL DEL DEL DEL
+05'. C-x C-c
+     diff -u exer1.html exer2.html >exer2.diff 
+
+1.3
+01. emacs exer3.html
+02. C-s Assignment 1 Enter Delete 37 C-s Assignment 1 Enter DEL 37
+03. ESC Shift < C-s UTF-8 Enter DEL DEL DEL DEL DEL US-ASCII
+04. ESC Shift < C-s <ol> Enter Enter
+05. C-x C-c
+    diff -u exer1.html exer3.html >exer3.diff outputs nothing
+
+1.4
+01. cat exer2.html exer2.diff >exer4.html
+02. emacs exer4.html
+03. End of the file | ESC Shift >
+* First comment -<!--diff..
+  - ESC Shift <
+  - C-s -< C-s C-s C-s 
+  - Enter C-b C_sp C-e M-w M-g M-g 18 Enter, C-y 
+* Second comment DELETE ME
+  - C-s -< C-s C-s C-s C-s
+  - Enter, C-b, C-spc, C-e, M-w, M-g, M-g 94 Enter, C-y (paste)
+* Third comment: 381-383
+  - C-s -< C-s C-s C-s C-s C-s
+  - Enter C-b C-sp C-e M-w M-x what-line M-g M-g 301 Enter C-y
+  - M-g M-g 382 C-f C-sp C-e M-w M-g M-g 302 Enter C-y
+  - M-g M-g 383 C-f C-sp C-e M-w M-g M-g 303 Enter C-y
+04. Done
+05. M-g M-g 356 C-spc -> M-> Delete
+06. C-x u
+07. M-g M-g 356 Enter <!-- M-> C-e -->
+08. M-x count-matches <ol> 7 occurences M-x replace-string <ol> <Ol>
+09. diff -u exer1.html exer4.html >exer4.diff 
+
+1.5
+01. mkdir ~/junk OR M-x make-directory Enter ~/junk in eMacs
+02. C-x C-f ~/junk/hello.c
+03. M-x compile, gcc hello.c -o hello
+04. M-x compile Enter ./hello Enter C-x b *compilation* Enter
+  C-Sp, C-n until "Compilation finished", M-w to copy into kill ring.
+05. C-x C-f hello-out Enter C-y C-x C-s
+#include <stdio.h>
+int
+main (void)
+{
+  char n = '\n';
+  char b = '\\';
+  char q = '"';
+  char const *p = "#include <stdio.h>%cint%cmain (void)%c{%c  char n = '%cn';%c  char b = '%c%c';%c  char q = '%c';%c  char const *p = %c%s%c;%c  printf (p, n, n, n, n, b, n, b, b, n, q, n, q, p, q, n, n, n, n);%c  return 0;%c}%c";
+  printf (p, n, n, n, n, b, n, b, b, n, q, n, q, p, q, n, n, n, n);
+  return 0;
+}
+
+1.6 
+01. emacs Open *scratch* buffer
+02. C-x b *scratch* (random) C-j
+03. 
+  (setq x (random)) C-j-2213982775465067930
+  (setq y (random)) C-j -342888278165026494
+  (setq z (random)) C-j -714310586167853188
+04. Product: 431800062096656592 it seems as if it's just another random number or OF
+  - three negatives cannot make a positive
+05. M-: (* x y z) 431800062096656592 (#o27760375714320644320, #x5fe0fde634348d0)
+  - Different additional format fo for the answer
+06. It wouldn't be entirely random then due to reliance on seed number when seed is the same.
+  - An algorithm is chosen for the random comp and used.
+  - You can try (random t) as an exercise to see if it would behave differently
+  - Note the difference between rand and srand in c++
+  - Alternative giving random a limit:
+    02. C-x b *scratch* (random 17) C-j
+    03. 
+      (setq x (random 17)) C-j 5
+      (setq y (random 17)) C-j 7
+      (setq z (random 17)) C-j 0
+    04. Product: 0
+    05. Still 0
