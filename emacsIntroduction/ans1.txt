@@ -1,0 +1,61 @@
+Kevin Vu, Comp Sci 35L Winter 2015 | Assignment 1 | ans1.txt
+Using eMacs to edit HTML files:
+  - Login into SEAS: ssh hoai@lnxsrv.seas.ucla.edu
+Useful:
+  - Esc-M-x linum-mode in emacs to enable line mode numbering
+  - Esc-M-x what-line for current line
+
+01. man -k "string" (man man)
+02. whereis cp whereis wc, cp: /usr/bin/cp wc: /usr/bin/wc (alternatively use: which)
+	- cp: /usr/bin/cp /usr/local/cs/bin/cp 
+		/usr/share/man/man1p/cp.1p.gz /usr/share/man/man1/cp.1.gz
+	- wc: /usr/bin/wc /usr/local/cs/bin/wc 
+		/usr/share/man/man1p/wc.1p.gz /usr/share/man/man1/wc.1.gz
+03. find /usr/bin  -name "?" [ Syntax: find Directory -name "?" ], "?" to find one-char	
+		/usr/bin/X | X: a portable, network-transparent windows system
+		/usr/bin/w | w: Show who is logged on and what they are doing. (man w)
+		/usr/bin/[ | [: Means to test, part of the shell's built-in
+						+ This is a synonym for the "test" builtin
+04. - readlink /usr/bin/emacs 
+ 	- readlink /etc/alternatives/emacs
+ 	- /usr/bin/emacs-24.3
+ 	- emacs-24.3 is actually executed
+05. chmod g+s, o-x filename means
+	g + s -> Set Group ID
+	o-x -> owner remove permission to run executable or search for directory
+06. find / -mtime -21 -type f
+07. find / -mtime -21 -type d
+08. whereis find -> find: /usr/bin/find
+	cd /usr/bin/
+	find -type l | wc ->  287     287    2901
+09. cd /usr/lib
+	ls -l -a -t
+	-rwxr-xr-x   1 root root  414960 Aug  7 13:43 libfreeblpriv3.so
+10. man locale
+	LC_*  environment variables
+11. emacs C-h a sort
+		C-x b *Apropos* 
+		buffer-menu-sort              M-x ... RET
+		sort-columns                  M-x ... RET
+		sort-fields                   M-x ... RET
+		sort-lines                    M-x ... RET
+		sort-numeric-fields           M-x ... RET
+		sort-pages                    M-x ... RET
+		sort-paragraphs               M-x ... RET
+		sort-regexp-fields            M-x ... RET
+		tabulated-list-col-sort       M-x ... RET
+		tabulated-list-sort           M-x ... RET
+12. - C-Meta-a: takes you to a beginning of a defun
+	- C-M-b: moves backwards over an balanced expression ex. Assignment 1 cursor on 1 to A
+	- C-M-c: recursive edits in progress are exited
+	- C-M-d: move down in parenthesis structure
+	- C-M-e: moves to the end of the defun
+	- C-M-f: moves forwards over an balanced expression. Assignment 1 cursor on A to 1
+	- C-M-g: rehighlight a range of lines
+	- C-M-h: highlights the region around the current following defun 
+	[Observations done by attempting the key strokes on eMacs]
+13. - C-g cancels a command quickly, keyboard-quit
+14. - Yank will will paste the last stretch of text that was recently killed (kill ring)
+15. -ls -l command: 1 file/dir per row, info: location/date, files listed are view only
+	Emacs dired command: an interactive autoloaded Lisp function in `dired.el' 
+		+ files listed and allowed to be opened (C-h k C-x d in eMacs)
