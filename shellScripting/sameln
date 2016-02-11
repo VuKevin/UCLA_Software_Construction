@@ -1,0 +1,60 @@
+#!/bin/bash
+# Kevin Vu | CS 35L | Winter '16 | sameln
+# Write a script sameln where the user provides as a dir name as an argument
+# ./sameln Directory
+# $0       $1
+
+dir=$1 # 1st Arg to be passed to script
+RESULT=` ls -a $dir | sort ` # Backticks will expand the ls expression
+declare -a ARRAY # declare an array via the -a option
+let count=0
+IFS=$'\n' # Added to handle "space" case by changing IFS to only be newline chr
+ 
+for FILE in $RESULT # FILE is a ptr to the first element (directory/file/link)
+do
+    if [ ! -r "$dir/$FILE" ] # If unreadable
+    then # Fall down to move onto the next iteration
+       echo "Error Report: $dir/$FILE is unreadable."
+    elif [ ! -L "$dir/$FILE" ] # Ignore links
+       then
+       if [ -f "$dir/$FILE" ] # "If it is a file" -f for file
+       then
+	   echo "$dir/$FILE is a regular file."
+	   ARRAY[$count]="$dir/$FILE"
+	   let count=count+1
+       else 
+	   echo "$dir/$FILE is NOT a regular file."
+       fi
+    fi
+done
+echo “There are $count regular files.”
+
+# Iterate over the array using doubly nested for loop
+for ((i=0; i<$count; i++)) # Alternatively: for i in "${ARRAY[@]}" fr Hwk Hints
+do
+    for ((j=0; j<$count; j++))
+    do
+	if [ $j -gt $i ]
+	then  
+	    cmp -l "${ARRAY[$i]}" "${ARRAY[$j]}"
+	    if [ $? == 0 ] #$? is the latest return values
+	    then
+		echo "$i and $j are duplicates"
+    		rm "${ARRAY[$j]}"
+		ln "${ARRAY[$i]}" "${ARRAY[$j]}"
+	    else
+		echo "$i and $j are unique"
+       	    fi
+	fi
+    done
+done
+echo "Reached end of script. Enjoy"
+
+
+# '$' to reference variables
+# If statements: do man test 
+# While loops: while[]; do then \n done
+# For loops: for f in $temp; do \n \t echo $f \n d
+# f refers to each word in $temp seperated by whitespace
+# Output using echo or printf
+# Special Character Handling: ., SP, 
