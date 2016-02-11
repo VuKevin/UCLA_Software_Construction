@@ -1,0 +1,47 @@
+Kevin Vu CS35L Lab 2 | Hwk 2 | Winter 2016
+- Working Directory: /w/home.04/ce/ugrad/hoai/ or ~/
+
+////* Homework: Find duplicate files *//// 
+	1. Write a shell script sameln that takes a single argument
+		a. Naming a directory D 
+		b. finds all regular files under D that are duplicates 
+		c. Replaces duplicates with hard links 
+		d. Examine only files that are immediately in D 
+
+
+	2. If script finds 2+ files that are duplicates
+		a. Keep the file that comes first in the Alphabet
+			b. Make the others hard links
+			c. BUT prefer files that start . over Alphabet
+
+
+	3. If script finds a file in D that is NOT a reg file
+		a. Silently ignore it (ignore all symbolic links and directories)
+
+
+	4. If script has a problem reading a file 
+		a. Report error and not treat it as a duplicate of any file 
+
+
+	5. CASES TO IGNORE:
+		a. Script given 0 arguments or > 1 arguments 
+
+
+	6. HANDLE:
+		a. files whose names contain special characters 
+		b. including spaces, '*', and '_'
+
+
+	7. Script should:
+		a. be runnable as an ordinary user 
+		b. be portable with any POSIX supporting system 
+
+Testing sameln script:
+	- run ls -ail dir to see contents, inodes should be different
+	- Run ./sameln dir
+	- run ls -ail dir to see contents, inodes of dupes should be same
+
+FILES TO SUBMIT: 
+	- buildwords
+	- lab2.log
+	- sameln 
