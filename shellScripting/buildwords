@@ -1,0 +1,19 @@
+#! /bin/bash
+sed '/<tr>/,/<\/td>/d'| # Get rid from startPattern: <tr>
+                        # to stopPattern: </td> ,d for delete
+tr '[:upper:]' '[:lower:]'  | # Realize upper case as lower case
+sed 's/<u>//g' |  # Replace <u> with ""
+sed 's/<\/u>//g' |  # Replace </u> with ""
+tr '`' "'" |  # Replace backtick with apostrophe
+grep '<td>.*</td>' | # Retain strings only b/t tags
+sed 's/<td>//g' | # Replace <td> tag with ""
+sed 's/<\/td>//g'|  # Replace </td> tag with ""
+tr  ' ' '\n' | # Consider spaces and commas as indicators
+sed 's/,/\n/g'|  # Of multi words (replace with newline)
+grep "[pk'mnwlhaeiou]" | # Accept only entries that contain Hawaiian letters
+egrep -v '^$' |  # Empty lines delete, using extended option and invert match
+tr -d '?' |
+sort -u # sort in unique
+
+# sed 's/ *$//' |
+# tr -d '\r' |
