@@ -1,0 +1,154 @@
+Kevin Vu CS35L Lab 2 | Hwk 2 | Winter 2016
+- Working Directory: /w/home.04/ce/ugrad/hoai/ or ~/
+
+/* Assumptions */
+- You're in the standard C or POSIX locale 
+	- (shell command locale should output LC_CTYPE="C" or LC_CTYPE="POSIX"
+	- If it doesnt: export LC_ALL='C'
+- The file 'words' contains a sorted list of English words
+	- Create file by sorting the contents of the file /usr/share/dict/words
+	- Put the result into a file named 'words' in your working directory
+		- SHELL COMMAND: sort /usr/share/dict/words > ~/words
+
+
+/* Instructions */
+- Take a text file containing the HTML in this assignment's webpage
+	- SHELL COMMAND:
+	- wget http://web.cs.ucla.edu/classes/winter16/cs35L/assign/assign2.html
+- Run the following commands with the text file being stdin
+	- Describe generally what each command outputs
+	- Following commands:
+	1.tr -c 'A-Za-z' '[\n*]'<assign2.html>result
+	2.tr -cs 'A-Za-z' '[\n*]' <assign2.html>result
+	3.tr -cs 'A-Za-z' '[\n*]' <assign2.html | sort >result
+	4.tr -cs 'A-Za-z' '[\n*]' <assign2.html | sort -u>result
+	5.tr -cs 'A-Za-z' '[\n*]' <assign2.html | sort -u | comm - words>result
+	6.tr -cs 'A-Za-z' '[\n*]' <assign2.html | sort -u | comm -23 - words>result
+
+
+/* RUNNING THE COMMANDS */
+1. Translation command with assign2.html as stdinput and output to result.
+	- From observing result, it appears that the command sifts 
+	through the input and searches for !isalpha, effectively
+	replacing each one with a newline.
+	- Where !isalpha includes numbers, <, ' ', ...
+2. 	- From observing result, it appears that this is similar to the 
+	first one except that repeats are only recognized once in a consecutive
+	sucession of non alphabetic characters.
+	- A notable difference from this one is the -s Option used for the
+	"squeezing out" of repeats 
+3. - From observing result, it appears that the command utilizes the output
+	from command #2 and sorts the lines based on ASCII
+4. - From observing result, this is similar to the 3rd command, but in that
+	copys are further removed instead here. Therefore, the list in the document
+	contains only unique words arranged by ASCII sort, hence the -u
+5. - From observing result, this command appears to compare the sorted
+	unique ASCII file to the file 'words'. 'words' contains a sorted list of
+	English words. A result is a 3 column'd output.
+	- Column 1: lines unique to the sorted unique ASCII file
+	- Column 2: lines unique to 'words'
+	- Column 3: lines shared by both
+6. - From observing result, this command is similar to command #5, except
+	in that the output has only 1 column and corresponds to the words unique 2
+	the sorted assign2.html file. From my guess the option -23 eliminates the 
+	other two columns or at leasts hides them.
+* Command #6 is the "crude implementation of an English spelling checker"
+
+
+/* INSTRUCTIONS */
+- WANT: Instead of words, we want hwords. 
+- Orthography limit (+Capitalization):
+	p k ' m n w l h a e i o u
+	P K   M N W L H A E I O U
+- SHELL COMMAND:
+	wget http://mauimapp.com/moolelo/hwnwdseng.htm
+	rename to hwn.htm
+- Create hwords -- a simple Hawaiian dictionary
+	- cat < hwn.htm | sort > result.htm
+- emacs buildwords
+- #! /bin/bash
+- ./buildwords < hwn.htm (I renamed hwndseng.htm)
+	- You will be using this periodically to check the output
+
+////* EXTRACTING WORDS SYSTEMATICALLY *////
+
+	/* Delete pattern <tr> to </td>, Hawaiian words don't exist there */
+	sed '/<tr>/,/<\/td>/d'|
+	--quiet if you want to don't visible output from ./buildwords < hwn.htm
+
+	/* Treat upper case letters as if they were lower case */
+	tr '[:upper:]' '[:lower:]' |
+
+	/* Replace <u> with "" */
+	sed 's/<u>//g' |
+
+	/* Replace </u> with "" */
+	sed 's/<\/u>//g' |
+
+	/* Treat ` as if it were ' */
+	tr '`' "'" |
+
+	/* Treat spaces and/or commas as indictators of multi-words */
+	tr  ' ' '\n' |
+	sed 's/,/\n/g' |
+
+	/* Retain strings only b/t tags */
+	grep '<td>.*</td>' |
+
+	/* Replace <td> tag with "" */
+	sed 's/<td>//g' |
+
+	/* Replace </td> tag with "" */
+	sed 's/<\/td>//g'| 
+
+	/* Reject any entries that contain non-H letters */ 
+	grep "[pk'mnwlhaeiou]" |
+
+	/* Delete Empty lines */
+	egrep -v '^$' |
+
+	/* Delete the invalid question mark */
+
+	tr -d '?' |
+
+	/* Sort the resulting list of words AND remove duplicates */
+	sort -u 
+
+////* AUTOMATE THESE RULES INTO BUILDWORDS SCRIPT *////
+	- Copy it into your log
+	- It should read the HTML from stdin 
+	- It should write a sorted list of unique words to stdout
+	- EX. cat foo.html bar.html | ./buildwords | less
+	Answer: cat hwn.htm | ./buildwords > hwords
+
+	- Modify the last shell command 
+	:tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words
+		- Let it check the spelling of Hawaiian rather than English
+		- Upper case input should be lower cased before compared with dict
+			- Because dictionary is in all lowercase
+		- tr -cs 'A-Za-z' '[\n*]' < assign2.html | tr 'A-Z' 'a-z' | sort -u |
+		 comm -23 - hwords |wc -l
+ 
+////* CHECKING your work *////
+	- Run Hawaiian spell checker on the cs webpage (fetch with wget)
+		- wget http://web.cs.ucla.edu/classes/winter16/cs35L/assign/assign2.html
+		- tr -cs 'A-Za-z' '[\n*]' < assign2.html | tr 'A-Z' 'a-z' | sort -u | 
+			comm -23 - hwords |wc -l
+	- Run on the Hawaiian dictionary hwords itself
+		- tr -cs 'A-Za-z' '[\n*]' < hwords | tr 'A-Z' 'a-z' | sort -u | 
+			comm -23 - hwords |wc -l
+	- Count the number of "misspelled" English and Hawaiian words
+		- On this webpage (assign2.html)
+		- Mispelled English Words (subs words): 39 from wc -l, but 38 if you
+			pipe to a result.txt file and look manualy w/o counting empty line
+		- Mispelled Hawaiian words (subs hwords): 406 from wc -l, but 405 by piping
+			to a result.txt file and looking (not counting empty line)
+	- Note the "mispelled" as English but not as Hawaiian:
+	halau, lau, wiki
+	- Note the "mispelled" as Hawaiian but not as English:
+	where, whose, what, above... and additional lots 
+
+FILES TO SUBMIT: 
+	- buildwords
+	- lab2.log
+	- sameln
