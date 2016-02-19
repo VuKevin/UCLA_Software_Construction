@@ -3,11 +3,11 @@ CS 35L | University of California at Los Angeles | Winter 2016
 
 Preliminary Scores
 
-Assignment 1 98 / 100
+Assignment 1 98 / 100      Avg: 96.8
 
-Assignment 2 100 / 100
+Assignment 2 100 / 100     Avg: 79.1
 
-Assignment 3 0 / 100 Unknown
+Assignment 3 88 / 100      Avg: 73
 
 Assignment 4 0 / 100 Unknown
 
