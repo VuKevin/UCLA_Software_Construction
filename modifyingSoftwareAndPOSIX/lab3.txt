@@ -1,0 +1,75 @@
+Kevin Vu CS35L Lab 3 | Hwk 3 | Winter 2016
+- Working Directory: /w/home.04/ce/ugrad/hoai/ or ~/
+
+WHAT: You're helping build an app that contains a shell script
+	- It invokes the ls command to get file status
+	- Application runs on Maroon Enterprise Linux 5 distribution
+	- ls implementation supplies by Coreutils 7.6
+
+PROBLEM:
+	- For some users, ls will generate this output:
+		$ ls -l /bin/bash
+		-rwxr-xr-x 1 root root 729040 2009-03-02 06:22 /bin/bash
+
+	- Instead, users want the traditional Unix format:
+		$ ls -l /bin/bash
+		-rwxr-xr-x 1 root root 729040 Mar  2  2009 /bin/bash
+
+	- The problem is actually b/c some users set their locale incorrectly:
+		ex. en_US.UTF-8 | $ export LC_ALL='en_US.UTF-8'
+		# Users who do this get YYYY-MM-DD instead of traditional dates
+
+	- The problem is that the locl files for Coreutils is incorrect
+		- We patch the ls program instead
+	- http://lists.gnu.org/archive/html/bug-coreutils/2009-09/msg00410.html
+
+WORKAROUND ATTEMPT (Installing a small change to a big package):
+- I installed Coreutils 7.6 using wget
+- Extracted the file (Untar + unzip) : $ tar -xzvf coreutils-7.6.tar.gz
+- I made the coreutilsInstall directory mkdir ~/coreutilsInstall
+- Compile source code:
+	- ./configure --prefix=/coreutilsInstall
+	- *Note: --prefix flag required or won't work on Linux Server
+- make | immediately after
+- make install prefix=~/coreutilsInstall | immediately after
+	-> Program should be now installed
+- To test for the bug:
+	- cd to coreutilsInstall/bin
+	- I ran ./ls -l (You can't just type 'ls' cause shell looks for /bin/ls)
+	- Then I ran ./ls -l /bin/bash
+	- Result: -rwxr-xr-x 1 root root 960376 2015-07-08 04:11 /bin/bash
+		- this shows the date format is the former Y-m-d h:m
+- Applying the patch (patches are inherently .diff files):
+	- cd /w/home.04/ce/ugrad/hoai/coreutils-7.6
+	- vim patchfile
+	- patch -p1 < patch_file (man patch)
+- 'make' at the top level of my source tree
+- ls.c is the original file for reference
+- Notable Commands from make: 
+- Were the CC ls.o update which was necessary
+	- because it directly worked with ls.cpp
+- CCLD dir which did not need to be updated.
+- CCLD vdir which did not need to be updated
+- CCLD ls needed to be executed since ls.o was affected
+- Check to make sure patch was successful
+	- cd /w/home.04/ce/ugrad/hoai/coreutils-7.6/src
+	- ./ls -l
+	- And the dates are fixed
+- touch newFile
+- touch -t 201401210959.30 oldFile
+- ./ls -l
+	- -rw-r--r-- 1 hoai ceugrad      0 Jan 21 16:49 newFile
+	- -rw-r--r-- 1 hoai ceugrad      0 Jan 21  2014 oldFile
+- I then traveled into the coreutilsInstall/bin directory via
+	- cd ~/coreutilsInstall/bin
+	- ./ls -l
+	- And this resulted in the incorrect date structure which was intended
+
+
+
+
+
+
+
+
+

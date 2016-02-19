@@ -1,0 +1,57 @@
+Kevin Vu CS35L Lab 3 | Hwk 3 | Winter 2016
+A file hw3.txt containing the answer to questions Q1 through Q4 noted above.
+
+Q1. Why did Brady's patch remove the line "case_long_iso_time_style:"? 
+Was it necessary to remove that line? Explain.
+
+- Brady's patch removed that line because it was already a duplicate line.
+- If you look, the next line to be executed is right below.
+- As such, it is not entirely necessary to remove that goto line.
+
+Q2. If your company adopts this patched version of Coreutils 
+instead of the default one, what else should you watch out for? 
+Might this new version of Coreutils introduce other problems 
+with your application, perhaps in countries where 
+users don't speak English and don't understand English-format dates?
+
+- You should watch out because this patched version of Coreutils solely 
+- Utilizes time in unix format. 
+- If your application is limited against backwards compatibility 
+	- This can lead to bugs from incorrect input.
+- Furthermore, many other countries use different formats for dates
+	- This change would not be semantically benefical to them and
+problems could arise from confusion from the divergence 
+away from numeric representation
+
+Q3. What happens when this script is invoked on an empty file like /dev/null,
+and why?
+
+- wget http://web.cs.ucla.edu/classes/winter16/cs35L/assign/randline.py
+- python ./randline.py /dev/null
+	-> IndexError: list index out of range
+- When you invoke randline.py on an empty file like /dev/null
+	- I found that the random-choice method did not correctly work 
+	- An IndexError resulted. 
+	- This is because the method tries to pass an argument in 
+		- But the contents being passed are empty.
+
+Q4. What happens when this script is invoked with Python 3 rather than Python 2
+And why?(You can run Python 3 on the SEASnet hosts by using the command python3
+instead of python.)
+
+- python3 ./randline.py /dev/null
+	-> File "./randline.py", line 65
+   		except IOError as (errno, strerror):
+		SyntaxError: invalid syntax
+- Trying to invoke the randline.py with Python 3 rather than Python 2 
+	- Resulted in a syntax error. 
+- This is because Python 2 and 3 have syntax differences 	
+	- Results in incompatablity  
+- I would hypothesize that their throw/exception methods' syntax are different	
+- And automatic tuple unpacking is different in Python 3 (Teacher Assistant)
+- except IOError as (errno, strerror): format of (___, ___) is incorrect in 3
+- Python tries to adhere to its "easy to learn, read, and use"
+	- So in Python 3 it got updated 
+	- To diverge away from implicit iterations on parameters 
+		- for exceptions through the exception itself
+- Implicit unpacking of exceptions is abandoned in Python 3
