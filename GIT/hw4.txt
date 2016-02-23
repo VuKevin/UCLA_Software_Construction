@@ -1,0 +1,89 @@
+Kevin Vu | CS35L | Winter '16
+
+hw4.txt
+
+02. Check out version 3.0 of Diffutils from your repository, 
+into a new branch named “quote”.
+
+git checkout v3.0 -b quote 
+
+Output: Switched to a new branch 'quote'
+
+
+03. Install your change into this new branch, by running the patch
+command with your patch quote-3.0-patch.txt as input.
+patch -p1 < quote-3.0-patch.txt 
+
+patching file src/cmp.c
+patching file src/diff.c
+patching file src/diff3.c
+patching file src/dir.c
+patching file src/sdiff.c
+patching file src/util.c
+
+04. Learn how to use the Emacs function add-change-log-entry-other-window 
+(C-x 4 a).
+
+C-x 4 a in each file to add entries
+
+05. Use this Emacs function to compose an appropriate ChangeLog entry for 
+your patch, by adapting the change log from the original patch.
+
+emacs src/cmp.c  
+C-x 4 a
+Add the change message
+Repeat
+
+
+06. Commit your changes to the new branch, using the ChangeLog entry as the 
+commit message.
+git add .
+git commit -a -m "ChangeLog"
+
+
+07. Use the command “git format-patch” to generate a file formatted-patch.txt.
+This patch should work without having to fix things by hand afterwards.
+
+git format-patch -1 --stdout  > formatted-patch.txt
+
+
+
+08. Your teaching assistant will assign you a partner, who will also generate
+a patch. Verify that your partner's patch works, by checking out version 3.0 
+again into a new temporary branch partner, applying the patch with the command 
+“git am”, and building the resulting system, checking that it works with
+“make check”.
+
+git am formatted-patch.txt -> to apply my partner's patch
+
+or
+
+git am --reject --whitespace=fix formatted-patch.txt
+	so any failures will result in a rej file
+
+Partner: Henry Zhu
+./bootstrap
+./configure
+make
+make check
+
+
+09. Verify that your ChangeLog entry works, by running the command
+“make distdir” and inspecting the resulting diffutils*/ChangeLog file.
+
+make distdir
+
+
+10. There is a copy of the GNU Emacs git repository's master branch on SEASnet 
+in the directory ~eggert/src/gnu/emacs. Run the command gitk on it, and find
+the newest merge that is not newer than 2015-01-25. Take a screenshot
+gitk-screenshot.png of your view of the mergepoint, and in an ASCII text
+file gitk-description.txt briefly describe the roles of subwindows that you
+see in the screenshot.
+
+Mac: Install XQuartz
+ssh -X hoai@lnxsrv01.seas.ucla.edu 
+git clone git://git.savannah.gnu.org/emacs.git   (get emacs source)
+cd emacs       (get inside the emacs root folder)
+gitk (Show gitk GUI)
+

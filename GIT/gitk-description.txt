@@ -1,0 +1,13 @@
+Kevin Vu | CS35L | Winter '16
+
+gitk-description.txt
+
+The upper half consists of information about the commits:
+	The left-top details the title/message for the commit 
+	The middle-top details the author who committed & their contact email
+	The right-top details the date and time it was committed
+The lower half consists of:
+	- Right-bott has files affected by commit
+	- Left-bott has patch content (what was changed, etc)
+Additionally:
+	- The Sha1 ID correlates to the hash number 
