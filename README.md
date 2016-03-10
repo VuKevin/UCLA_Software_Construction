@@ -17,7 +17,7 @@ Assignment 6 0 / 100 Unknown
 
 Assignment 7 0 / 100 Unknown
 
-Assignment 8 0 / 100 Unknown
+Assignment 8 98 / 100       Avg: 84.8
 
 Assignment 9 0 / 100 Unknown
 
