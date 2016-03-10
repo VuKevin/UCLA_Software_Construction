@@ -7,7 +7,7 @@ Assignment 1 98 / 100      Avg: 96.8
 
 Assignment 2 100 / 100     Avg: 79.1
 
-Assignment 3 88 / 100      Avg: 73
+Assignment 3 93 / 100      Avg: 73
 
 Assignment 4 97 / 100      Avg: 86.6
 
