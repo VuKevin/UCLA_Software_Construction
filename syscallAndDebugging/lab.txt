@@ -1,0 +1,196 @@
+Kevin Vu CS35L Lab 7 | Hwk 7 | Winter 2016
+- Working Directory: /w/home.04/ce/ugrad/hoai/ or ~/
+
+==========================================
+Laboratory: Buffered versus unbuffered I/O
+==========================================
+
+Premise:
+	- Implement transliteration programs tr2b and tr2u that...
+		- Use buffered and unbuffered I/O respectively
+	- Compare the resulting implementation and performance
+	- Each implementation should:
+		- a main program that takes two operands "from" and "to"
+			- "from" and "to" are byte strings of the same length
+			- copies standard input to standard output, transliterating every byte in "from" to the corresponding byte in "to"
+			- Error reporting:
+				- "from" and "to" are not the same length
+				- if "from" has duplicate bytes
+		- implementations should act like standard tr BUT no options
+			- '[' '-' '\' have no special meaning in the operands
+		- operand errors: must be diagnosed
+		- implemetations act on bytes rather than on (possibly multibyte) characters
+
+01. Write a C transliteration program tr2b.c that uses getchar and putchar to transliterate bytes as described above.
+- Operands "from" and "to" are byte strings of the same length
+- Steps to reproduce tr2b.c:
+	- Initial Error Checking
+		-> Check if there are two operands | Argument Check
+		-> Check if operands "from" & "to" are not the same length | Equal Length Check
+		-> Check if "from" has duplicate bytes | Duplicates check in Argument 1
+	- For read and write: getchar(), putchar()
+		-> getchar() for retrieving standard input
+	- If char exists in "from"
+		-> set the char in "to"
+		-> putchar()
+	- Additional annotations located in tr2b.c itself
+- Compile the programs using gcc
+	- gcc -Wall -g -o tr2b tr2b.c
+		output: warning: statement with no effect 
+			- I found that it just refers to my for loop including an already initialized index, so I made fixes
+- Testing
+	* Error handling
+		- cat test.txt | ./tr2b "asdfgh" "xzcvb"
+		- cat test.txt | ./tr2b "aas" "fde"
+		- cat test.txt | ./tr2b "aas" "fde" "fde"
+	* tr & ./tr2b use
+		- cat test.txt | tr "h" "H"
+		- cat test.txt | ./tr2b "h" "H"
+		- cat test.txt | tr "file" "FILE"
+		- cat test.txt | ./tr2b "file" "FILE"
+02. Write a C program tr2u.c that uses read and write to transliterate bytes, instead of using getchar and putchar. 
+The nbyte arguments to read and write should be 1, so that the program reads and writes single bytes at a time. 
+
+- Operands "from" and "to" are byte strings of the same length
+- Steps to reproduce tr2u.c:
+	- Initial Error Checking
+		-> Check if there are two operands | Argument Check
+		-> Check if operands "from" & "to" are not the same length | Equal Length Check
+		-> Check if "from" has duplicate bytes | Duplicates check in Argument 1
+	- For read and write: read() and write()
+		-> read() for retrieving standard input
+	- If char in buffer is in "from"
+		-> set the char in "to"
+		-> write()
+	- Additional annotations located in tr2u.c itself
+- Compile the programs using gcc
+	- gcc -Wall -g -o tr2u tr2u.c
+- Testing
+	* Error handling
+		- cat test.txt | ./tr2u "asdfgh" "xzcvb"
+		- cat test.txt | ./tr2u "aas" "fde"
+		- cat test.txt | ./tr2u "aas" "fde" "fde"
+	* tr & ./tr2b use
+		- cat test.txt | tr "h" "H"
+		- cat test.txt | ./tr2u "h" "H"
+		- cat test.txt | tr "file" "FILE"
+		- cat test.txt | ./tr2u "file" "FILE"
+
+03. Use the strace command to compare the system calls issued by your tr2b and tr2u commands 
+(a) when copying one file to another, and 
+(b) when copying a file to your terminal. 
+* Use a file that contains at least 5,000,000 bytes.
+
+- Create a file w/ at least 5m bytes
+	head --bytes=5000000 /dev/urandom > output.txt
+(a) 
+	strace -o stracebanother -c cat output.txt | ./tr2b 'x' 'y' >file1
+	cat stracebanother
+	% time     seconds  usecs/call     calls    errors syscall
+	------ ----------- ----------- --------- --------- ----------------
+	 99.15    0.024000         312        77           write
+	  0.85    0.000205           3        81           read
+	  0.00    0.000000           0        23         5 open
+	  0.00    0.000000           0        20           close
+	  0.00    0.000000           0        19           fstat
+	  0.00    0.000000           0        21           mmap
+	  0.00    0.000000           0         4           mprotect
+	  0.00    0.000000           0         2           munmap
+	  0.00    0.000000           0         3           brk
+	  0.00    0.000000           0         3         3 access
+	  0.00    0.000000           0         1           execve
+	  0.00    0.000000           0         1           arch_prctl
+	  0.00    0.000000           0         1           fadvise64
+	------ ----------- ----------- --------- --------- ----------------
+	100.00    0.024205                   256         8 total
+
+	strace -o straceuanother -c cat output.txt | ./tr2u 'x' 'y' >file2
+	cat straceuanother
+	% time     seconds  usecs/call     calls    errors syscall
+	------ ----------- ----------- --------- --------- ----------------
+	100.00    0.032000         416        77           write
+	  0.00    0.000000           0        81           read
+	  0.00    0.000000           0        23         5 open
+	  0.00    0.000000           0        20           close
+	  0.00    0.000000           0        19           fstat
+	  0.00    0.000000           0        21           mmap
+	  0.00    0.000000           0         4           mprotect
+	  0.00    0.000000           0         2           munmap
+	  0.00    0.000000           0         3           brk
+	  0.00    0.000000           0         3         3 access
+	  0.00    0.000000           0         1           execve
+	  0.00    0.000000           0         1           arch_prctl
+	  0.00    0.000000           0         1           fadvise64
+	------ ----------- ----------- --------- --------- ----------------
+	100.00    0.032000                   256         8 total
+(b)
+	strace -o stracebterminal -c cat output.txt | ./tr2b 'x' 'y'
+	cat stracebterminal
+	% time     seconds  usecs/call     calls    errors syscall
+	------ ----------- ----------- --------- --------- ----------------
+	100.00    0.024000         312        77           write
+	  0.00    0.000000           0        81           read
+	  0.00    0.000000           0        23         5 open
+	  0.00    0.000000           0        20           close
+	  0.00    0.000000           0        19           fstat
+	  0.00    0.000000           0        21           mmap
+	  0.00    0.000000           0         4           mprotect
+	  0.00    0.000000           0         2           munmap
+	  0.00    0.000000           0         3           brk
+	  0.00    0.000000           0         3         3 access
+	  0.00    0.000000           0         1           execve
+	  0.00    0.000000           0         1           arch_prctl
+	  0.00    0.000000           0         1           fadvise64
+	------ ----------- ----------- --------- --------- ----------------
+	100.00    0.024000                   256         8 total
+
+	strace -o straceuterminal -c cat output.txt | ./tr2u 'x' 'y'
+	cat straceuterminal
+	% time     seconds  usecs/call     calls    errors syscall
+	------ ----------- ----------- --------- --------- ----------------
+	100.00    0.028000         364        77           write
+	  0.00    0.000000           0        81           read
+	  0.00    0.000000           0        23         5 open
+	  0.00    0.000000           0        20           close
+	  0.00    0.000000           0        19           fstat
+	  0.00    0.000000           0        21           mmap
+	  0.00    0.000000           0         4           mprotect
+	  0.00    0.000000           0         2           munmap
+	  0.00    0.000000           0         3           brk
+	  0.00    0.000000           0         3         3 access
+	  0.00    0.000000           0         1           execve
+	  0.00    0.000000           0         1           arch_prctl
+	  0.00    0.000000           0         1           fadvise64
+	------ ----------- ----------- --------- --------- ----------------
+	100.00    0.028000                   256         8 total
+
+From using strace, you can see the number of total system calls are the same whether
+buffered or not. However, the time in seconds is better for the buffered versions.
+
+04. Use the time command to measure how much faster one program is, compared to the other, when copying the same amount of data.
+
+- time cat output.txt | ./tr2b 'a' 'b'
+real    0m13.321s
+user    0m0.320s
+sys     0m5.908s
+- time cat output.txt | ./tr2u 'a' 'b'
+real    0m14.496s
+user    0m0.288s
+sys     0m5.816s
+
+==================================
+Homework: Encrypted sort revisited
+==================================
+Premise: Rewriting sfrob from Assignment 5, Homework 5
+- Rewrite so that it uses system calls rather than <stdio.h>
+	- To read standard input and write standard output
+	- If stdin is a regular file, your program should initially allocate enough memory to hold all the data in that file all at once, not reallocating memory as you go.
+	- BUT, if the regular file grows while you are reading it, then my program should still be able to allocate more memory after the initial file size has been read.
+	- Additionally: success -> use fprintf to output a line of the following form to standard error before finishing: Comparisons: # (of comparisons done by program)
+		- A comparison is defined as an invocation of frobcmp to compare two input lines
+		- Exactly 1 space !! And use base 10 without leading zeros. Terminated with a new line.
+- Call the rewritten sfrobu. Measure any differences in performance between sfrob and sfrobu using time command.
+	- Run your program on inputs of varying numbers of input lines & estimate the number of comparisons as a function of number of input lines
+- ASIDE: Write a shell script sfrobs that uses standard tr and sort to sorted encrypted files using a pipeline 
+	- Don't create any temp files!
+	- Use the time command to compare sfrobs overall performance to the other two programs. You do not need to count the number of comparisons that sfrobs makes

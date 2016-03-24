@@ -1,0 +1,113 @@
+Kevin Vu CS35L Lab 7 | Hwk 7 | Winter 2016
+
+===================================================
+sfrobu.txt: Results of sfrob performance comparison
+===================================================
+
+printf '*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4' | ./sfrob | od -ta
+
+I. Measure any differences in performance between sfrobu & sfrob
+
+time printf '*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4' | ./sfrobu | od -ta
+real    0m0.012s
+user    0m0.000s
+sys     0m0.000s
+
+time printf '*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4' | ./sfrob | od -ta
+
+real    0m0.008s
+user    0m0.004s
+sys     0m0.000s
+
+-- Create a random big test file 
+	base64 /dev/urandom | head -c 50000 > biggie.txt
+	time cat biggie.txt | ./sfrobu | od -ta 
+real    0m0.110s
+user    0m0.032s
+sys     0m0.028s
+	time cat biggie.txt | ./sfrob | od -ta
+real    0m0.150s
+user    0m0.024s
+sys     0m0.004s
+
+	base64 /dev/urandom | head -c 500000 > biggie2.txt
+	time cat biggie2.txt | ./sfrobu | od -ta
+real    0m1.253s
+user    0m0.216s
+sys     0m0.332s
+	time cat biggie2.txt | ./sfrob | od -ta
+real    0m1.047s
+user    0m0.156s
+sys     0m0.108s
+
+	base64 /dev/urandom | head -c 5000000 > biggie3.txt
+	time cat biggie3.txt | ./sfrobu | od -ta
+real    0m11.320s
+user    0m2.028s
+sys     0m3.088s
+	time cat biggie3.txt | ./sfrob | od -ta
+real    0m7.167s
+user    0m1.336s
+sys     0m0.644s
+
+From the tests, I can tell that using system calls as designed in sfrobu is slower. 
+Increasing the file size you see even bigger disparities between the two. It is definitely
+because of the direct write call.
+
+
+II. Estimate the number of comparisons as a function of the number of input lines
+
+Our use of qsort has a complexity nlogn for Big O, so I would assume it would be similar.
+
+But to approximate, I estimated the # of comparisons
+
+1 line -- Comparisons: 17
+
+cat the10 | ./sfrobu | od -ta
+10 lines -- Comparisons: 400 
+
+cat the50 | ./sfrobu | od -ta
+50 lines -- Comparisons: 2853 
+
+cat the100 | ./sfrobu | od -ta 
+100 lines -- Comparisons: 6451 
+
+cat the350 | ./sfrobu | od -ta
+350 lines -- Comparisons: 27313 
+
+cat the700 | ./sfrobu | od -ta | less
+700 lines -- Comparisons: 59867 
+
+cat the1000 | ./sfrobu | od -ta | less
+1000 lines -- Comparisons: 88808 
+
+
+If I had to turn this into a function,
+The best-fit function to this would be y = 89.9231x - 1557.15
+where X is the set of input lines
+and Y is the set of comparisons
+** Works better for larger inputs**
+
+III. Use the time command to compare the overall performance of sfrobs to the other two programs
+
+time printf '*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4' | ./sfrobs | od -ta
+real    0m0.012s
+user    0m0.004s
+sys     0m0.004s
+
+time cat biggie.txt | ./sfrobs | od -ta
+real    0m0.147s
+user    0m0.012s
+sys     0m0.004s
+
+time cat biggie2.txt | ./sfrobs | od -ta
+real    0m1.170s
+user    0m0.196s
+sys     0m0.072s
+
+time cat biggie3.txt | ./sfrobs | od -ta
+real    0m8.527s
+user    0m1.548s
+sys     0m0.648s
+
+From the results, it seems that sfrob is the best in terms of time, followed by sfrobs, and then sfrobu.
