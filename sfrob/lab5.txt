@@ -1,0 +1,202 @@
+lab5.txt
+
+PREMISE: Debugging a C Program
+	- You are helping to maintain an old stable version of coreutils
+	- But that version has a bug in its implementation of ls program
+		- Actually has two, but just focus on the first one at hand
+	- BUG: ls -t
+		- Mishandles files whose time stamps are very far in the past
+		- Seemingly acts as if they are in the future
+	- INSTRUCTIONS
+		- Build this old version of coreutils as-is
+		- Build again with this renaming patch: 
+			http://web.cs.ucla.edu/classes/winter16/cs35L/assign/coreutils.diff
+		- What problems did you have when building it as-is? 
+		- Why did the renaming patch fix them?
+
+Reproduce the problem:
+	- Use debugger to figure out what went wrong 
+	- Fix corresponding source file
+	- Construct a new patch file lab5.diff containing coreutils fixes
+		- ChangeLog entry followed by diff -u patch
+	- Also try to reduce the problem in your home directory on SEASNet Servers
+		- (Rather than $tmp directory)
+		- When running the above test case
+		- Use the already-installed touch and ls utilities 
+			- (instead of the old version of coreutils) 
+		- How well does SEASnet do?
+
+LAB 5 Records:
+Get the old stable version of coreutils with the bug
+	wget http://web.cs.ucla.edu/classes/winter16/cs35L/assign/coreutils-with-bug.tar.gz
+
+Extract the .tar.gz
+	tar -zxvf coreutils-with-bug.tar.gz
+
+cd coreutils-with-bug
+
+BUILDING:
+
+Configure/Compile with optimizations followed by make
+	./configure CFLAGS="-g -O0"
+	make
+	# This resulted in:
+		utimens.h:2:5: error: conflicting types for 'futimens'
+		int futimens (int, char const *, struct timespec const [2]);
+		note: previous declaration of 'futimens' was here
+	 	extern int futimens(int __fd,const struct timespec __times[2]) __THROW;
+	            ^
+	    Makefile:659: recipe for target 'utimecmp.o' 
+	# From what I gathered from the error message, it seems that
+	# the problem of building occurs since there are two methods named futimens
+
+Build again with the renaming patch:
+	wget http://web.cs.ucla.edu/classes/winter16/cs35L/assign/coreutils.diff
+
+	patch -p0 < coreutils.diff
+	./configure CFLAGS="-g -O0"
+	make
+	# The renaming patch resolved to change futimens to coreutils_futimens
+
+REPRODUCING BUG: [cd into src]
+
+	$ tmp=$(mktemp -d)
+	$ cd $tmp
+	$ touch -d '1918-11-11 11:00 GMT' wwi-armistice
+	$ touch now
+	$ sleep 1
+	$ touch now1
+	$ TZ=UTC0 ls -lt --full-time wwi-armistice now now1
+	Output:
+-rw-r--r-- 1 hoai ceugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 hoai ceugrad 0 2016-02-05 10:23:38.633196959 +0000 now1
+-rw-r--r-- 1 hoai ceugrad 0 2016-02-05 10:23:27.101018685 +0000 now
+	# This implies that wwi-armistice is a new file than the other two
+	# Which is incorrect 
+
+DEBUGGING:
+
+emacs ls.c # To examine the source code
+
+gdb ~/coreutils-with-bug/src/ls
+
+(gdb) break sort_files
+(gdb) break compare_mtime
+(gdb) break rev_cmp_mtime
+(gdb) break cmp_mtime
+
+# I wanted to look for methods that would affect time and order.
+# The functions are declared fr. Lines 227 to 265 to which I noticed sort_files
+# I looked into the contents of sort_files and 
+# Saw that it assigns compare_mtime or rev_cmp_mtime to be called
+# But ultimately both lead to cmp_mtime being called
+
+# All the compare functions ultimately led to the call of timespec_cmp()
+# I opened timespec.h to inspect:
+
+/* Return negative, zero, positive if A < B, A == B, A > B, respectively.
+   Assume the nanosecond components are in range, or close to it.  */
+static inline int
+timespec_cmp (struct timespec a, struct timespec b)
+{
+  int diff = a.tv_sec - b.tv_sec;
+  return diff ? diff : a.tv_nsec - b.tv_nsec;
+}
+
+[hoai@lnxsrv09 ~/coreutils-with-bug/src]$ 
+# Overflow occurs during the comparison at which the super old file
+# 'wwi-armistice' is compared to 'now'. GDB confirms this if you monitor
+# the register values you'll see that diff's following stored value was
+# obstructed by the integer overflow. 
+
+GENERATING A PATCH:
+# I copied the timespec.h file and rewrote the timespec_cmp method
+# By changing the stored value into long long int and casting the arguments 
+# the same. Then, I wrote small if statements to reflect the function's
+# description in the comments
+#
+	cd ~/coreutils-with-bug/lib
+	I generated a patch to timespec.h in the form of .diff with the following
+	diff -u timespec.h newtimespec.h > lab5.diff
+	M-x add-change-log-entry
+
+APPLYING THE PATCH:
+
+cd ~/coreutils-with-bug/lib
+patch -p1 < ~/coreutils-with-bug1/lib/lab5.diff
+File to patch: timespec.h
+
+cd ~/coreutils-with-bug/src
+Then try to reproduce the bug (refer to 'REPRODUCING THE BUG:')
+
+# Apply patch
+
+
+
+Also, try to reproduce the problem in your home directory on the SEASnet Linux
+servers, instead of using the $tmp directory. When running the above test case,
+use the already-installed touch and ls utilities instead of the old version of
+coreutils. How well does SEASnet do?
+
+It yields an incorrect timestamp for wwi-armistice. This occurs due to the fact
+that the SEASNet file system uses 32-bit ints. Meanwhile, the
+Linux server and their file system uses 64-bit ints. This is 
+reflected in this example by showing how an expected negative value becomes 
+a positive since the sign bit and the top 32 bits are trashed resulting in a
+large positive int.
+
+===================================
+Homework Sorting Encrypted Text:
+===================================
+Premise: Take an input as an encoded file, sort the decoded data, 
+and encode the resulting output WITHOUT decoding or encoding.
+
+Write a C function frobcmp that 
+	- takes two arguments a and b of type char const * as input
+	- returns an integer result that is -1, 0, 1 depending on a and b compare
+	- each arguments point to an array of non-space bytes followed by a space
+		- byte
+	- use byte-by-byte lexicographic comparison of the non-space bytes
+		- in the style of memcmp fxn
+		- assume both arrays are frobinacated via memfrob
+	- return the equivalent of running memcmp on the corresponding unfrob'd arr
+	- If one unfrob'd array is a prefix of another, then the shorter is less
+	- space bytes are not considered to be part of array -- don't do comparison
+	- EX. Call: frobcmp ("*{_CIA\030\031 ", "*`_GZY\v ")
+		Output: 1
+	- null bytes do contribute to comparison
+	- DON'T invoke memfrob, look at frob'd bytes one at a time
+	- reads frob'd text lines from stdin, writes a sorted version to stdout
+	- frob'd text lines: series of non-space bytes followed by a single space
+		- spaces represent newlines in original text
+	- if stdin ends in a partial record that does not have a trailing space
+		- programshould behave as if a space were appended to the input
+
+Use <stdio.h> functions to do i/o
+Use malloc, realloc, and free to allocate storage to hold input
+Use qsort to sort data
+Continue to read until EOF
+
+Errors:
+	- report error to stderr and exit status 1
+	- else exit with status 0 (success)
+
+Testing:
+	- Compile your .c with gcc
+	- gcc sfrob.c
+	- gcc -o sfron sfrob.c
+	- printf '*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4' | ./sfrob | od -ta
+	- Should output:
+	0000000   *   h   X   E   ]   D  sp   *   {   _   C   I   A  sp   *   ~
+	0000020   B   O  sp   *   L   E   R  sp   #   N   E   M eot  sp   #   @
+	0000040   _   G   Z   Y  sp   #   F   K   P   S  sp   #   E   \   O   X
+	0000060  sp   #   ^   B   O  sp
+	0000066
+	- od -ta is so you can see each byte that's being printed even non-printing characters
+	- Also make sure it works on empty files
+	- And on big files like
+	- cat /usr/local/cs/jdk*/jre/lib/rt.jar | ./sfrob | od -ta
+
+	Should give same output:
+	cat /usr/local/cs/jdk*/jre/lib/rt.jar
+	cat /usr/local/cs/jdk*/jre/lib/rt.jar | ./sfrob
