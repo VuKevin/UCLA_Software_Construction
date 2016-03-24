@@ -1,7 +1,6 @@
 # UCLA_Software_Construction
 CS 35L | University of California at Los Angeles | Winter 2016
-
-Preliminary Scores
+(Preliminary Scores)
 
 **Assignment 1 [ emacsIntroduction ]** 98 / 100      Avg: 96.8
 
