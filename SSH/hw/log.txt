@@ -1,0 +1,85 @@
+log.txt
+lab6
+========
+Premise: 
+========
+	What you'd like to do is to be able to run processes (Firefox...etc) on the other student's hosts.
+	- Ex. Log into a neighbor's host, and run a program there that displays on your host
+	- To do that: You need to set up an account on your neighbor's host, and vice versa so that you neighbor can log on your host and do the same
+		- BUT, you would then need to exchange pw over the Internet... need to avoid t hat.
+
+Exercise in defense:
+	- Set up computers so you can log into each other's hosts w/o letting the other teams into your own hosts
+	- *Don't actually try to break into the other team's hosts 
+	- Use OpenSSH to establish trusted connections among your teams' hosts. 
+		- Make logins convenient so use ssh-agent on your host to manage authentication
+			- That is, you should be able to log out of your host (all connections dropped) then log back in
+				- By typing your passphrase ONCE to ssh-agent
+				- Then be able to use ssh to connect to any of your colleagues' hosts w/o pw or passphrases
+	- Also use port forwarding so you can run a command on a remote that displays on your host
+		EX. Should be able to log into a remote host, type 'xterm' and get a shell window on your host
+
+=========
+BEGIN LOG
+=========
+
+01. dpkg --get-selections | grep openssh
+02. sudo apt-get install openssh-server
+03. sudo apt-get install openssh-client
+04. ssh-keygen 
+
+Enter file in which to save the key (/home/ubuntu/.ssh/id_rsa): id_rsa
+Enter passphrase (empty for no passphrase): imkevinvu
+Enter same passphrase again: imkevinvu
+Your identification has been saved in id_rsa.
+Your public key has been saved in id_rsa.pub.
+The key fingerprint is:
+ab:73:2d:cb:71:d1:2a:17:1b:5e:f0:b2:b0:c4:d9:08 ubuntu@vukevin-demo-project-2451127
+The key's randomart image is:
++--[ RSA 2048]----+
+|                 |
+|                 |
+|      E   .      |
+|       o + +     |
+|        S * +    |
+|       . = X     |
+|        =.B      |
+|      .oo=.      |
+|      .ooo       |
++-----------------+
+
+05. ifconfig # Get ip addresss
+
+06. SERVER-SIDE:
+
+	sudo useradd -d ~/henry -m henry
+	sudo passwd henry
+	Enter new UNIX password: thatishenry
+	Retype new UNIX password: thatishenry
+
+	sudo mkdir .ssh
+	sudo chown -R henry .ssh
+	sudo chmod 700 .ssh 
+	emacs /etc/ssh/sshd_config
+	If unwritable, do sudo chmod 777 /etc/ssh/sshd_config   
+	Change 'PasswordAuthentication' yes to no
+
+07. CLIENT-SIDE:
+
+	# Copy public key to the server
+	ssh-copy-id -i KevinVu@10.0.2.15  # Setting up the connection
+	# Warning to confirm before connecting
+
+	ssh-add # Add private key to authentication
+
+	ssh KevinVu@10.0.2.15 # ssh to the server
+	ssh -x KevinVu@10.0.2.15 # X-forwarding option instead
+
+	# Enter private key when prompted for pw
+
+	# Now, try to run commands
+	'firefox' # Success
+
+
+Notes:
+	# Ping Partner's IP address to make sure connection to partner works (L. Samy)

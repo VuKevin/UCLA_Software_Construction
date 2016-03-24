@@ -1,0 +1,124 @@
+hw.txt
+Assign 6
+/* Answers to questions at the bottom */
+
+============
+Premise:
+============
+- Use GNU Privacy Guard's shells commands to create a key pair.
+- Export the public key, in ASCII format, into a file hw-pubkey.asc.
+- Use this key to create a detached signature for your submission so the commands described below can verify it successfully
+
+01. Generate a key pair with the GNU Privacy Guard’s commands
+
+	$ gpg --gen-key (choose default options)
+
+	OUTPUT/ENTRIES: 
+		Please select what kind of key you want:
+		   (1) RSA and RSA (default)
+		   (2) DSA and Elgamal
+		   (3) DSA (sign only)
+		   (4) RSA (sign only)
+		Your selection? 1.
+
+		RSA keys may be between 1024 and 4096 bits long.
+		What keysize do you want? (2048) 
+
+		Please specify how long the key should be valid.
+		         0 = key does not expire
+		      <n>  = key expires in n days
+		      <n>w = key expires in n weeks
+		      <n>m = key expires in n months
+		      <n>y = key expires in n years
+		Key is valid for? (0) 0
+		Key does not expire at all
+		Is this correct? (y/N) y
+		You need a user ID to identify your key; the software constructs the user ID
+		from the Real Name, Comment and Email Address in this form:
+		    "Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>"
+
+		Real name: kevinvu
+		Email address: vukevin@icloud.com
+		Comment: vukevin
+		You selected this USER-ID:
+		    "kevinvu (vukevin) <vukevin@icloud.com>"
+
+		Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? O
+		You need a Passphrase to protect your secret key.
+
+		gpg: gpg-agent is not available in this session
+		We need to generate a lot of random bytes. It is a good idea to perform
+		some other action (type on the keyboard, move the mouse, utilize the
+		disks) during the prime generation; this gives the random number
+		generator a better chance to gain enough entropy.
+
+		Not enough random bytes available.  Please do some other work to give
+		the OS a chance to collect more entropy! (Need 187 more bytes)
+
+		..+++++
+		..........+++++
+
+		Not enough random bytes available.  Please do some other work to give
+		the OS a chance to collect more entropy! (Need 128 more bytes)
+		        
+		...........+++++
+
+		gpg: key F61C98C2 marked as ultimately trusted
+		public and secret key created and signed.
+
+		gpg: checking the trustdb
+		gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+		gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+		pub   2048R/F61C98C2 2016-02-13
+		      Key fingerprint = 9920 93D2 40A7 0121 961A  2BAE EF62 FCF9 F61C 98C2
+		uid                  kevinvu (vukevin) <vukevin@icloud.com>
+		sub   2048R/8DDC0F40 2016-02-13
+
+
+02. Export public key, in ASCII format, into hw-pubkey.asc 
+
+	$ gpg --armor --output hw-pubkey.asc --export 'kevinvu'
+
+03. Make a tarball of the above files + log.txt and zip it with gzip to produce hw.tar.gz
+
+	$ tar -c -f hw.tar hw.txt log.txt hw-pubkey.asc           
+	$ gzip hw.tar -> creates hw.tar.gz
+
+04. Use the private key you created to make a detached clear signature hw.tar.gz.sig for hw.tar.gz
+
+	$ gpg --armor --output hw.tar.gz.sig --detach-sign hw.tar.gz 
+
+	You need a passphrase to unlock the secret key for
+	user: "kevinvu (vukevin) <vukevin@icloud.com>"
+	2048-bit RSA key, ID F61C98C2, created 2016-02-13
+
+	gpg: gpg-agent is not available in this session
+	Enter passphrase: imkevinvu
+
+05. Use given commands to verify signature and file formatting
+These can be found at the end of the assignment spec  
+
+	gunzip <hw.tar.gz | tar xf -
+	mkdir -m go-rwx .gnupg
+	gpg --homedir .gnupg --import hw-pubkey.asc
+	gpg --verify hw.tar.gz.sig hw.tar.gz
+	awk '200 < length' log.txt hw.txt
+
+	gpg: Signature made Sat 13 Feb 2016 03:07:27 AM UTC using RSA key ID F61C98C2
+	gpg: Good signature from "kevinvu (vukevin) <vukevin@icloud.com>"
+
+========================
+Begin Homework Questions
+========================
+
+QUESTION 1:
+- Under that assumption, the resulting network yes will still be secure. The other teams will merely see encrypted bytes.
+- The other teams, that is, don't have the server's private key/session key available to them.
+- in (1), if they had keyboard access, then they would in turn have login credentials and your network would NOT be secure in which the passphrase could potentially be figured out
+- in (2), if they had temporary control of the USB, they still could set up a keylogger which would be similar to the risks in keyboard access since they could record everything you type and 
+	- obtain passwords, keys, signatures, etc. Therefore, NOT secure.
+
+QUESTION 2:
+Explain why the gpg --verify command in the following instructions doesn't really verify that you personally created the tar file in question. How would you go about fixing this problem?
+- The command solely checks that the file has not been modified following creation, that the signature aligns with the tar file, and fails to check who really created the files.
+- To fix the problem: a third party can come in to verify signatures and confirm legitimacy (who really created the files).
