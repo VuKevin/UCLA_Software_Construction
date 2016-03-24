@@ -1,0 +1,75 @@
+log.txt
+Lab Log Assign 8
+
+==========================================
+Laboratory: Multithreaded Performance
+==========================================
+PREMISE:
+	- When processes run in Linux, each has its own virtual processor
+	- tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words -----> 3 Processes
+		- one process per tr, sort, and comm.
+		- each process has its own virtual MEM
+		- communication b/t processes -> system calls
+	- Multithreading to gain performance:
+		- a process gets more than thread of execution
+			- each thread with its own instruction pointer, registers, & stack
+			- each thread can be executing a different function 
+				- and the functions' locals variables are accessed only by that thread
+				- BUT threads can directly access shared memory, and can communicate via shared memory
+	- Synchronization
+		- It's easy to write buggy programs that have race conditions
+			- Where one thread is reading from an area that another thread is simultaneously writing to --> garbage !
+	- You will
+		- Use a pre-built app that shouldn't have internal race conditions
+		- Write an app that is embarassingly paralle so there are no needs for subthreads to synchronize with each other
+
+Steps to Reproduce Lab:
+	01. Check PATH & Coreutils version
+		- echo $PATH
+		- export PATH=/usr/local/cs/bin:$PATH
+		- sort --version
+	02. Generate a file containing 10,000,000 random double-precision floating point numbers, in textual form, one per line with no white space.
+		- od -An -tf -N 80000000 < /dev/urandom | tr -s ' ' '\n' > randomten.txt
+		where od is used to dump files, t is the text format, f option is for doubles, N 80000000 ceilings dump to that many bytes
+	03. 
+
+	Use time -p to time the command sort -g on that data, with the output sent to /dev/null. Do not time od or any of the rest of your test harness; time just sort itself.
+
+	- time -p sort -g randomten.txt > /dev/null
+	real 35.60
+	user 196.41
+	sys 0.55
+
+	Invoke sort with the --parallel option as well as the -g option, and run your benchmark with 1, 2, 4, and 8 threads, in each case recording the real, user, and system time.
+
+	- time -p sort -g --parallel=1 randomten.txt > /dev/null
+		real 177.76
+		user 177.41
+		sys 0.34
+	- time -p sort -g --parallel=2 randomten.txt > /dev/null
+		real 97.39
+		user 185.82
+		sys 0.34
+	- time -p sort -g --parallel=4 randomten.txt > /dev/null
+		real 54.47
+		user 186.51
+		sys 0.46
+	- time -p sort -g --parallel=8 randomten.txt > /dev/null
+		real 36.02
+		user 194.46
+		sys 0.54
+
+    The decrease in real shows that multithreading is powerful in performance improvement
+
+	  time -p sort -g --parallel=16 randomten.txt > /dev/null
+	  real 28.00
+	  user 225.49
+	  sys 0.76
+
+      time -p sort -g --parallel=32 randomten.txt > /dev/null
+      real 24.80
+	  user 327.24
+	  sys 1.44
+
+	  The margin is clearly not as great as you keep increasing the number of threads, however. This is incorporated in Amdahl's Law which tells us theoretical maximum speed up for P processors.
+
